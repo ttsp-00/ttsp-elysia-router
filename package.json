@@ -1,6 +1,6 @@
 {
 	"name": "ttsp-elysia-router",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"description": "TTSP Elysia Router - A filesystem based routing for Elysia",
 	"keywords": [
 		"bun",
