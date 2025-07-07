@@ -7,7 +7,7 @@ exact = true
 
 [test]
 # Test configuration
-preload = ["./test/setup.ts"]
+preload = ["./__tests__/setup.ts"]
 
 [run]
 # Run configuration

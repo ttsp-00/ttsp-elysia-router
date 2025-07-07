@@ -12,11 +12,11 @@ import * as v from 'valibot'
 import { fileURLToPath } from 'node:url'
 import { fs2 } from '@/lib/fs2'
 import swagger from '@elysiajs/swagger'
+import fs from 'node:fs'
 
 const app = new Elysia()
-	.use(swagger())
-
 const endpoints: any = {}
+let initialized = false
 
 /**
  * Creates an endpoint for a directory and adds a helper user to the context
@@ -48,7 +48,29 @@ function endpoint(url: string) {
 /**
  * Runs the application by loading all endpoints from the specified directory
  */
-async function run(dirname: string) {
+async function run(dirname: string, options = {}) {
+	if (initialized) {
+		return app
+	}
+
+	initialized = true
+
+	if (!fs.existsSync(dirname)) {
+		throw new Error('Enpoints directory not found')
+	}
+
+	if (dirname === process.cwd()) {
+		throw new Error('Enpoints directory cannot be the same as the process.cwd()')
+	}
+
+	// setting up app
+	app.use(swagger())
+	app.onError(({ error, path, set }) => {
+		const e: any = error
+		// console.error('[ERROR]:', set.status, e.message)
+		// console.error('[ERROR]:', path)
+	})
+
 	const files = fs2
 		.readdirRecursive(join(dirname))
 		.sort((a, b) => b.localeCompare(a))
@@ -63,12 +85,19 @@ async function run(dirname: string) {
 
 	// Connect nested endpoints to parent modules
 	let lastParentModule: any = null
+
 	for (const file of files) {
-		const parentFile = file.split('/').slice(0, -1).join('/') + '.ts'
 
-		const module = modules[file]
-		const parentModule = modules[parentFile]
+		// for search/entity.ts, parentFile is search.ts
+		const parentFile = file
+			.split('/')
+			.slice(0, -1) // remove last part of the path
+			.join('/') + '.ts' // add .ts to the path
 
+		const module = modules[file] // search/entity.ts
+		const parentModule = modules[parentFile] // search.ts
+
+		// if parentFile is not a module, then app is the parent
 		if (!parentModule) {
 			app.use(module)
 			continue
@@ -81,9 +110,19 @@ async function run(dirname: string) {
 	return app
 }
 
+class TTSPError extends Error {
+	status: number
+	constructor(message: string, status: number = 500) {
+		super(message)
+		this.name = 'TTSPError'
+		this.status = status
+	}
+}
+
 const TTSP = {
 	run,
-	endpoint
+	endpoint,
+	Error: TTSPError
 }
 
 export default TTSP
