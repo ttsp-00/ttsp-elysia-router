@@ -12,7 +12,7 @@ import { fileURLToPath } from 'node:url'
 import { fs2 } from '@/lib/fs2'
 import swagger from '@elysiajs/swagger'
 import fs from 'node:fs'
-import { log } from 'node:console'
+
 
 const app = new Elysia()
 const endpoints: Record<string, unknown> = {}
@@ -92,16 +92,6 @@ async function run(dirname: string, _options = {}) {
 		}
 
 		parentModule.use(module)
-		module.derive(async (props) => {
-			const _props = props as any
-
-			if (_props.user) {
-				return {
-					user: _props.user
-				}
-			}
-			return {}
-		})
 	}
 
 	return app
