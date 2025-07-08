@@ -6,6 +6,9 @@ export const fs2 = {
 		const files = fs.readdirSync(dir)
 		const result: string[] = []
 		for (const file of files) {
+			if (file.startsWith('_')) {
+				continue
+			}
 			const filePath = join(dir, file)
 			const stats = fs.statSync(filePath)
 			if (stats.isDirectory()) {

@@ -7,15 +7,15 @@
 
 import Elysia from 'elysia'
 import { join, parse } from 'node:path'
-import { log } from 'node:console'
 import * as v from 'valibot'
 import { fileURLToPath } from 'node:url'
 import { fs2 } from '@/lib/fs2'
 import swagger from '@elysiajs/swagger'
 import fs from 'node:fs'
+import { log } from 'node:console'
 
 const app = new Elysia()
-const endpoints: any = {}
+const endpoints: Record<string, unknown> = {}
 let initialized = false
 
 /**
@@ -28,17 +28,6 @@ function endpoint(url: string) {
 	const prefix = parse(filePath).name
 
 	const endpoint = new Elysia({ prefix })
-		.derive(async ({ headers, request, set }) => {
-			const user = async () => {
-				set.status = 401
-			}
-			return { user }
-		})
-		.mapResponse(({ set }) => {
-			if (set.status === 401) {
-				return new Response('')
-			}
-		})
 
 	endpoints[filePath] = endpoint
 
@@ -48,7 +37,7 @@ function endpoint(url: string) {
 /**
  * Runs the application by loading all endpoints from the specified directory
  */
-async function run(dirname: string, options = {}) {
+async function run(dirname: string, _options = {}) {
 	if (initialized) {
 		return app
 	}
@@ -56,17 +45,17 @@ async function run(dirname: string, options = {}) {
 	initialized = true
 
 	if (!fs.existsSync(dirname)) {
-		throw new Error('Enpoints directory not found')
+		throw new Error('Endpoints directory not found')
 	}
 
 	if (dirname === process.cwd()) {
-		throw new Error('Enpoints directory cannot be the same as the process.cwd()')
+		throw new Error('Endpoints directory cannot be the same as the process.cwd()')
 	}
 
 	// setting up app
 	app.use(swagger())
-	app.onError(({ error, path, set }) => {
-		const e: any = error
+	app.onError(({ error }) => {
+		const _e: unknown = error
 		// console.error('[ERROR]:', set.status, e.message)
 		// console.error('[ERROR]:', path)
 	})
@@ -75,16 +64,15 @@ async function run(dirname: string, options = {}) {
 		.readdirRecursive(join(dirname))
 		.sort((a, b) => b.localeCompare(a))
 
-	const modules: any = {}
+	const modules: Record<string, Elysia> = {}
 
 	// Load all modules
 	for (const file of files) {
 		const module = await import(file)
-		modules[file] = module.default
+		modules[file] = module.default as Elysia
 	}
 
 	// Connect nested endpoints to parent modules
-	let lastParentModule: any = null
 
 	for (const file of files) {
 
@@ -104,7 +92,16 @@ async function run(dirname: string, options = {}) {
 		}
 
 		parentModule.use(module)
-		lastParentModule = parentModule
+		module.derive(async (props) => {
+			const _props = props as any
+
+			if (_props.user) {
+				return {
+					user: _props.user
+				}
+			}
+			return {}
+		})
 	}
 
 	return app

@@ -11,4 +11,4 @@ preload = ["./__tests__/setup.ts"]
 
 [run]
 # Run configuration
-bun = true 
+bun = true

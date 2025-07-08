@@ -1,7 +1,7 @@
 import TTSP from '@/lib/ttsp'
 import { join } from 'node:path'
 
-const dirname = join(__dirname)
+const dirname = join(__dirname, 'endpoints')
 const app = await TTSP.run(dirname)
 
 const port = Bun.env.PORT || 3000

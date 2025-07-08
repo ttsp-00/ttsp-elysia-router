@@ -1,6 +1,5 @@
 import TTSP from '@/lib/ttsp'
 import { test, expect } from 'bun:test'
-import { log } from 'node:console'
 import { join } from 'node:path'
 
 const app = await TTSP.run(join(__dirname, '..', 'endpoints'))

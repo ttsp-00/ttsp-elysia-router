@@ -56,7 +56,7 @@
 		"@typescript-eslint/parser": "8.36.0",
 		"bun-types": "latest",
 		"eslint": "9.30.1",
-		"ttsp-eslint-config": "latest"
+		"ttsp-eslint-config": "^0.0.13"
 	},
 	"module": "index.ts",
 	"exports": {

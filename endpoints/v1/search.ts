@@ -1,4 +1,6 @@
 import TTSP from '@/lib/ttsp'
 
 export default TTSP.endpoint(import.meta.url)
-	.get('/', () => 'search')
+	.get('/', ({ headers }) => {
+		return 'search'
+	})
